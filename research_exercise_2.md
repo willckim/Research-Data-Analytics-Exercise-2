@@ -1,6 +1,6 @@
 William Kim
-[Course Number and Section]
-[Instructor Name]
+ACC-242
+Michelle Wray
 September 8, 2026
 
 # Research Exercise 2
@@ -49,31 +49,77 @@ This is an exit price, meaning the price the entity would get in a hypothetical 
 
 ## Question 3: Classification of Tiny Manufacturing Company's Investment
 
-I searched the keyword "Classification of Investment Securities," clicked Show All Results, opened the Topics tab, and selected 320 Investments—Debt Securities. That returns seven paragraphs, all of them within Subtopic 10 (Overall). Six of the seven cover related issues such as reassessing classification at each reporting date (320-10-35-5), presentation on the statement of cash flows (320-10-45-11), and specific circumstances affecting held-to-maturity classification (320-10-25-5, 25-6, and 25-18). The seventh is the paragraph that actually governs how a newly acquired debt security gets classified, and it is the one below.
+I ran the search the same way Mr. Small did. I typed "Classification of Investment
+Securities" into the keyword box, hit Show All Results, opened the Topics tab, and
+clicked on Topic 320 for debt securities. That gave me seven results, all of them in
+Subtopic 10 (Overall). Six of the seven deal with side issues. Three cover situations
+where a security cannot be called held-to-maturity (320-10-25-5, 25-6, and 25-18), one
+covers rechecking the classification at each reporting date (320-10-35-5), one covers
+how the investment shows up on the statement of cash flows (320-10-45-11), and one
+covers measurement after purchase. The seventh result is the paragraph that actually
+tells you how to classify a debt security at the time you buy it, so that is the one I
+used.
 
 ### a. The three categories
 
-At acquisition, an entity has to classify a debt security into one of three categories:
+At acquisition, a debt security has to go into one of three categories.
 
-1. **Trading securities.** Securities bought with the intent of selling them within hours or days. The guidance does note that an entity is not prevented from calling a security trading just because it plans to hold it longer than that.
-2. **Available-for-sale securities.** The residual category, made up of debt securities that are not classified as trading or held-to-maturity.
-3. **Held-to-maturity securities.** Allowed only where the reporting entity has the positive intent and ability to hold the security to maturity.
+1. **Trading securities.** Securities bought with the plan of selling them within hours
+   or days. The guidance does say a company is not blocked from calling a security
+   trading even if it plans to hold it longer than that.
+2. **Available-for-sale securities.** The catch-all category. Any debt security that is
+   not trading and not held-to-maturity.
+3. **Held-to-maturity securities.** Allowed only when the company has the positive
+   intent and ability to hold the security until it matures.
 
 ### b. Reference for this guidance
 
-FASB ASC 320-10-25-1, which breaks down as Topic 320 (Investments, Debt Securities), Subtopic 10 (Overall), Section 25 (Recognition), Paragraph 1. The paragraph sits under the heading "Classification of Debt Securities." The paragraph right after it, FASB ASC 320-10-25-2, adds that the investor has to document the classification at acquisition.
+FASB ASC 320-10-25-1. That breaks down as Topic 320 (Investments, Debt Securities),
+Subtopic 10 (Overall), Section 25 (Recognition), Paragraph 1. The paragraph sits under
+the heading "Classification of Debt Securities." The paragraph right after it, FASB ASC
+320-10-25-2, adds that the company has to document the classification when it buys the
+security.
 
-### c. Classification of the Microsoft bond on Tiny Co's financial statements
+### c. How the Microsoft bond should be classified
 
-The bond should be reported as an available-for-sale security. Tiny Co carries it at fair value on the balance sheet and reports the unrealized gains and losses in other comprehensive income instead of in net income.
+Tiny Co should report the bond as an available-for-sale security. I worked through the
+other two categories first to get there.
 
-I started with held-to-maturity, since that is the category Mr. Small's plan comes closest to. FASB ASC 320-10-25-1(c) allows held-to-maturity treatment "only if the reporting entity has the positive intent and ability to hold those securities to maturity." Mr. Small does not have that. His plan is to sell the bond in a year or two if interest rates drop and the bond gains value, and to hold it only if that does not happen. FASB ASC 320-10-25-5(b) speaks to this exact situation. It provides that a debt security "that is available to be sold in response to changes in market interest rates ... shall not be included in the held-to-maturity category because the possibility of a sale is indicative that the entity does not have a positive intent and ability to hold the security to maturity." Holding the bond is Mr. Small's backup plan rather than his actual intent, so held-to-maturity does not work.
+Held-to-maturity was the first one I looked at, since holding the bond and collecting
+interest is part of what Mr. Small describes. FASB ASC 320-10-25-1(c) only allows that
+category when the company has the "positive intent and ability" to hold the security to
+maturity. Mr. Small does not have that. He plans to sell in a year or two if rates fall
+and the bond gains value, and he will only hold it if that does not happen. FASB ASC
+320-10-25-5(b) covers this exact fact pattern. It says a security that is available to
+be sold in response to changes in market interest rates cannot go in the
+held-to-maturity category, because the chance of a sale shows the company does not have
+the intent and ability to hold it. Holding the bond is Mr. Small's fallback plan, not
+his actual plan, so that category is out.
 
-Trading does not fit either. FASB ASC 320-10-25-1(a) describes trading securities as ones acquired "with the intent of selling [them] within hours or days." Mr. Small is looking at a one to two year window on the first investment his company has ever made, which is nothing like that. The same paragraph does say an entity is "not precluded from classifying as trading a security it plans to hold for a longer period," but that is permission rather than a requirement, and nothing in the facts suggests Tiny Co is in the business of trading securities.
+Trading does not work either. FASB ASC 320-10-25-1(a) describes trading securities as
+ones bought with the intent of selling "within hours or days." Mr. Small is looking at a
+one to two year window on the first investment his company has ever made, which is a
+long way from that. The same paragraph does say a company is not stopped from calling
+something trading even if it plans to hold it longer, but that is permission, not a
+requirement, and nothing in the facts says Tiny Co is in the business of trading
+securities.
 
-That leaves available-for-sale. FASB ASC 320-10-25-1(b) defines it as the category for debt securities "not classified as trading securities or as held-to-maturity securities." It is the residual category, and it matches what Mr. Small is actually doing. He might sell the bond and he might not, but either way he is not trading it and he has not committed to holding it to maturity.
+That leaves available-for-sale. FASB ASC 320-10-25-1(b) defines that category as debt
+securities "not classified as trading securities or as held-to-maturity securities." It
+is the catch-all, and it fits what Mr. Small is actually doing. He might sell the bond
+and he might not, but either way he is not day trading it and he has not committed to
+holding it to maturity.
 
-The classification also determines how the bond shows up on the financial statements. Under FASB ASC 320-10-35-1, an available-for-sale security is measured at fair value, and the unrealized holding gains and losses go to other comprehensive income rather than net income until Tiny Co actually sells. The interest Mr. Small collects still runs through net income as it is earned. Whether the bond is a current or a noncurrent asset depends on Topic 210 and on when Tiny Co expects to realize it, so with a one to two year horizon it would most likely be noncurrent unless the company expects to sell within the next year. One last point worth making is that FASB ASC 320-10-35-5 requires the classification to be reviewed at every reporting date, so if Mr. Small changes his mind about the bond, Tiny Co has to look at the category again.
+The category also drives how the bond shows up on the statements. Under FASB ASC
+320-10-35-1, an available-for-sale security is carried at fair value, and the unrealized
+holding gains and losses go to other comprehensive income instead of net income until
+Tiny Co actually sells. The interest Mr. Small collects still runs through net income as
+it is earned. Whether the bond is current or noncurrent depends on Topic 210 and on when
+Tiny Co expects to realize it, so with a one to two year horizon it would most likely be
+noncurrent unless the company expects to sell within the next year. One last thing worth
+adding is that FASB ASC 320-10-35-5 makes the company review the classification at every
+reporting date, so if Mr. Small changes his mind about the bond, Tiny Co has to look at
+the category again.
 
 ---
 
