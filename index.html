@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paper Editor</title>
+
+<!-- Editor chrome. Not exported. -->
+<style>
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    color: #222;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+  }
+
+  #topbar {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid #ccc;
+    background: #f5f5f5;
+  }
+  #doc-title {
+    font-weight: 600;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  #controls {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 0 0 auto;
+  }
+
+  button {
+    font: inherit;
+    font-size: 13px;
+    color: #222;
+    background: #fff;
+    border: 1px solid #999;
+    border-radius: 3px;
+    padding: 0.3rem 0.7rem;
+    cursor: pointer;
+  }
+  button:hover { background: #ececec; }
+  button:active { background: #ddd; }
+  button:focus-visible { outline: 2px solid #06c; outline-offset: 1px; }
+
+  #viewtoggle { display: flex; }
+  #viewtoggle button {
+    border-radius: 0;
+    margin-left: -1px;
+  }
+  #viewtoggle button:first-child { border-radius: 3px 0 0 3px; margin-left: 0; }
+  #viewtoggle button:last-child { border-radius: 0 3px 3px 0; }
+  #viewtoggle button[aria-pressed="true"] {
+    background: #ddd;
+    border-color: #666;
+    position: relative;
+    z-index: 1;
+  }
+
+  #panes {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+  }
+  #editor-pane, #preview-pane { min-width: 0; overflow: auto; }
+  #editor-pane { border-right: 1px solid #ccc; display: flex; }
+  #preview-pane { background: #fff; }
+
+  #panes.view-split #editor-pane,
+  #panes.view-split #preview-pane { flex: 1 1 50%; }
+  #panes.view-edit #preview-pane { display: none; }
+  #panes.view-edit #editor-pane { flex: 1 1 100%; border-right: 0; }
+  #panes.view-preview #editor-pane { display: none; }
+  #panes.view-preview #preview-pane { flex: 1 1 100%; }
+
+  #source {
+    flex: 1 1 auto;
+    width: 100%;
+    border: 0;
+    outline: none;
+    resize: none;
+    padding: 1rem;
+    font-family: Consolas, "SF Mono", Menlo, Monaco, "Courier New", monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #222;
+    background: #fff;
+    tab-size: 4;
+  }
+
+  @media print {
+    #topbar { display: none; }
+    #panes { display: block; }
+    #editor-pane { display: none !important; }
+    #preview-pane { display: block !important; overflow: visible; border: 0; }
+  }
+</style>
+
+<!--
+  Document styling. This exact block is copied verbatim into every exported
+  HTML file, so the preview and the export cannot drift apart. Every rule is
+  scoped to .paper, which wraps the rendered document in both places.
+-->
+<style id="doc-style">
+  .paper {
+    max-width: 45em;
+    margin: 0 auto;
+    padding: 3rem 1.75rem 5rem;
+    font-family: Georgia, "Times New Roman", Times, serif;
+    font-size: 17px;
+    line-height: 1.5;
+    color: #000;
+    background: #fff;
+    text-align: left;
+  }
+
+  .paper p { margin: 0 0 1em; }
+
+  /* Name / course / instructor / date block: plain left aligned lines. */
+  .paper > p:first-child { margin-bottom: 2.5em; }
+
+  .paper h1 {
+    text-align: center;
+    font-size: 1.55em;
+    font-weight: bold;
+    line-height: 1.3;
+    margin: 0 0 0.4em;
+  }
+  .paper h2 {
+    font-size: 1.2em;
+    font-weight: bold;
+    line-height: 1.3;
+    margin: 2.25em 0 0.6em;
+  }
+  .paper h3 {
+    font-size: 1.05em;
+    font-weight: bold;
+    line-height: 1.3;
+    margin: 1.75em 0 0.5em;
+  }
+  .paper h1 + h2 { margin-top: 0.75em; }
+
+  .paper ul, .paper ol { margin: 1em 0; padding-left: 1.75em; }
+  .paper li { margin: 0.5em 0; }
+  .paper li > p { margin: 0 0 0.5em; }
+
+  .paper blockquote {
+    margin: 1.5em 2.5em;
+    padding: 0;
+    border: 0;
+    font-size: 0.95em;
+    font-style: normal;
+    quotes: none;
+  }
+  .paper blockquote::before, .paper blockquote::after { content: none; }
+  .paper blockquote p { margin: 0 0 0.8em; }
+  .paper blockquote p:last-child { margin-bottom: 0; }
+
+  .paper table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5em 0;
+    font-size: 0.92em;
+  }
+  .paper th, .paper td {
+    border: 1px solid #ccc;
+    padding: 0.5em 0.7em;
+    text-align: left;
+    vertical-align: top;
+  }
+  .paper th {
+    background: #f0f0f0;
+    font-weight: bold;
+  }
+
+  .paper hr {
+    border: 0;
+    border-top: 1px solid #ddd;
+    margin: 2.5em 0;
+    height: 0;
+  }
+
+  .paper a { color: #000; }
+  .paper code, .paper pre {
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 0.9em;
+  }
+  .paper img { max-width: 100%; }
+
+  @media print {
+    @page { margin: 1in; }
+    .paper {
+      max-width: none;
+      margin: 0;
+      padding: 0;
+      font-size: 12pt;
+    }
+    .paper table, .paper thead, .paper tr, .paper blockquote {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    .paper h1, .paper h2, .paper h3 {
+      page-break-after: avoid;
+      break-after: avoid;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header id="topbar">
+  <div id="doc-title">Loading...</div>
+  <div id="controls">
+    <div id="viewtoggle" role="group" aria-label="View mode">
+      <button type="button" data-view="edit" aria-pressed="false">Edit</button>
+      <button type="button" data-view="split" aria-pressed="true">Split</button>
+      <button type="button" data-view="preview" aria-pressed="false">Preview</button>
+    </div>
+    <button type="button" id="btn-html">Download HTML</button>
+    <button type="button" id="btn-md">Download Markdown</button>
+    <button type="button" id="btn-reset">Reset to original</button>
+  </div>
+</header>
+
+<main id="panes" class="view-split">
+  <div id="editor-pane">
+    <textarea id="source" spellcheck="false" aria-label="Markdown source"></textarea>
+  </div>
+  <div id="preview-pane">
+    <div class="paper" id="preview"></div>
+  </div>
+</main>
+
+<!--
+  Offline fallback copy of research_exercise_2.md, used when fetch() is blocked
+  because the page was opened over file://. It must stay identical to the .md
+  file in the project root. When the page is served over http:// the app fetches
+  the real file and compares the two, warning in the console if they have drifted.
+-->
+<script id="fallback-md" type="text/markdown">
+William Kim
+[Course Number and Section]
+[Instructor Name]
+September 8, 2026
+
+# Research Exercise 2
+
+## FASB Accounting Standards Codification
+
+---
+
+## Question 1: Number Series by Category
+
+The Codification arranges its topical categories in numbered series. Assets occupy the 300 series, as noted in the assignment. The remaining categories are as follows.
+
+| Category | Series | Example topics in that range |
+| --- | --- | --- |
+| Assets | 300 series | 305 Cash and Cash Equivalents; 310 Receivables; 32X Investments; 330 Inventory; 350 Intangibles (Goodwill and Other); 360 Property, Plant, and Equipment |
+| Liabilities | 400 series | 405 Liabilities; 410 Asset Retirement and Environmental Obligations; 450 Contingencies; 470 Debt |
+| Equity | 500 series | 505 Equity |
+| Revenue | 600 series | 606 Revenue from Contracts with Customers; 610 Other Income |
+| Expenses | 700 series | 705 Cost of Sales and Services; 730 Research and Development; 740 Income Taxes |
+
+Navigation: from the Codification home page, each category label in the left-hand navigation pane opens a flyout listing the Topics within that series.
+
+---
+
+## Question 2: Glossary Definitions (FASB ASC 310-10-20)
+
+Navigating to Assets > 310 Receivables > 10 Overall > 20 Glossary produces the following definitions.
+
+### a. Current Assets
+
+> "Current assets is used to designate cash and other assets or resources commonly identified as those that are reasonably expected to be realized in cash or sold or consumed during the normal operating cycle of the business."
+
+FASB ASC 310-10-20. The definition cross-references paragraphs 210-10-45-1 through 45-4.
+
+In practice, the measuring period is the entity's normal operating cycle, or one year where that cycle is shorter than a year.
+
+### b. Fair Value
+
+> "The price that would be received to sell an asset or paid to transfer a liability in an orderly transaction between market participants at the measurement date."
+
+FASB ASC 310-10-20.
+
+This is an exit price, meaning the price the entity would get in a hypothetical market transaction, not the amount it originally paid. Both "orderly transaction" and "market participants" are defined terms in the Codification glossary as well.
+
+---
+
+## Question 3: Classification of Tiny Manufacturing Company's Investment
+
+I searched the keyword "Classification of Investment Securities," clicked Show All Results, opened the Topics tab, and selected 320 Investments—Debt Securities. That returns seven paragraphs, all of them within Subtopic 10 (Overall). Six of the seven cover related issues such as reassessing classification at each reporting date (320-10-35-5), presentation on the statement of cash flows (320-10-45-11), and specific circumstances affecting held-to-maturity classification (320-10-25-5, 25-6, and 25-18). The seventh is the paragraph that actually governs how a newly acquired debt security gets classified, and it is the one below.
+
+### a. The three categories
+
+At acquisition, an entity has to classify a debt security into one of three categories:
+
+1. **Trading securities.** Securities bought with the intent of selling them within hours or days. The guidance does note that an entity is not prevented from calling a security trading just because it plans to hold it longer than that.
+2. **Available-for-sale securities.** The residual category, made up of debt securities that are not classified as trading or held-to-maturity.
+3. **Held-to-maturity securities.** Allowed only where the reporting entity has the positive intent and ability to hold the security to maturity.
+
+### b. Reference for this guidance
+
+FASB ASC 320-10-25-1, which breaks down as Topic 320 (Investments, Debt Securities), Subtopic 10 (Overall), Section 25 (Recognition), Paragraph 1. The paragraph sits under the heading "Classification of Debt Securities." The paragraph right after it, FASB ASC 320-10-25-2, adds that the investor has to document the classification at acquisition.
+
+### c. Classification of the Microsoft bond on Tiny Co's financial statements
+
+The bond should be reported as an available-for-sale security. Tiny Co carries it at fair value on the balance sheet and reports the unrealized gains and losses in other comprehensive income instead of in net income.
+
+I started with held-to-maturity, since that is the category Mr. Small's plan comes closest to. FASB ASC 320-10-25-1(c) allows held-to-maturity treatment "only if the reporting entity has the positive intent and ability to hold those securities to maturity." Mr. Small does not have that. His plan is to sell the bond in a year or two if interest rates drop and the bond gains value, and to hold it only if that does not happen. FASB ASC 320-10-25-5(b) speaks to this exact situation. It provides that a debt security "that is available to be sold in response to changes in market interest rates ... shall not be included in the held-to-maturity category because the possibility of a sale is indicative that the entity does not have a positive intent and ability to hold the security to maturity." Holding the bond is Mr. Small's backup plan rather than his actual intent, so held-to-maturity does not work.
+
+Trading does not fit either. FASB ASC 320-10-25-1(a) describes trading securities as ones acquired "with the intent of selling [them] within hours or days." Mr. Small is looking at a one to two year window on the first investment his company has ever made, which is nothing like that. The same paragraph does say an entity is "not precluded from classifying as trading a security it plans to hold for a longer period," but that is permission rather than a requirement, and nothing in the facts suggests Tiny Co is in the business of trading securities.
+
+That leaves available-for-sale. FASB ASC 320-10-25-1(b) defines it as the category for debt securities "not classified as trading securities or as held-to-maturity securities." It is the residual category, and it matches what Mr. Small is actually doing. He might sell the bond and he might not, but either way he is not trading it and he has not committed to holding it to maturity.
+
+The classification also determines how the bond shows up on the financial statements. Under FASB ASC 320-10-35-1, an available-for-sale security is measured at fair value, and the unrealized holding gains and losses go to other comprehensive income rather than net income until Tiny Co actually sells. The interest Mr. Small collects still runs through net income as it is earned. Whether the bond is a current or a noncurrent asset depends on Topic 210 and on when Tiny Co expects to realize it, so with a one to two year horizon it would most likely be noncurrent unless the company expects to sell within the next year. One last point worth making is that FASB ASC 320-10-35-5 requires the classification to be reviewed at every reporting date, so if Mr. Small changes his mind about the bond, Tiny Co has to look at the category again.
+
+---
+
+Source: FASB Accounting Standards Codification, Topics 310 and 320. Accessed via academic access, September 2026.
+</script>
+
+<script src="vendor/marked.min.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var SOURCE_FILE = "research_exercise_2.md";
+  var STORAGE_KEY = "paper-editor:" + SOURCE_FILE;
+  var RENDER_DEBOUNCE_MS = 150;
+
+  /* Minimal base for the exported page. Everything else comes from #doc-style. */
+  var EXPORT_BASE_CSS = [
+    "  html { background: #fff; }",
+    "  body { margin: 0; background: #fff; }",
+    ""
+  ].join("\n");
+
+  var sourceEl = document.getElementById("source");
+  var previewEl = document.getElementById("preview");
+  var titleEl = document.getElementById("doc-title");
+  var panesEl = document.getElementById("panes");
+  var docStyleEl = document.getElementById("doc-style");
+  var resetBtn = document.getElementById("btn-reset");
+
+  marked.setOptions({ gfm: true, breaks: true });
+
+  /* ---------- storage (may be unavailable on file:// in some browsers) ---------- */
+
+  function storageGet() {
+    try { return window.localStorage.getItem(STORAGE_KEY); }
+    catch (e) { return null; }
+  }
+  function storageSet(value) {
+    try { window.localStorage.setItem(STORAGE_KEY, value); }
+    catch (e) { /* private mode or file:// restrictions; editing still works */ }
+  }
+  function storageClear() {
+    try { window.localStorage.removeItem(STORAGE_KEY); }
+    catch (e) { /* nothing to do */ }
+  }
+
+  /* ---------- loading the original ---------- */
+
+  function inlineFallback() {
+    var el = document.getElementById("fallback-md");
+    /* Strip only the single newline the script tag adds on each side. */
+    return el.textContent.replace(/^\r?\n/, "").replace(/\r?\n$/, "");
+  }
+
+  function loadOriginal() {
+    return fetch(SOURCE_FILE, { cache: "no-store" })
+      .then(function (res) {
+        if (!res.ok) { throw new Error("HTTP " + res.status); }
+        return res.text();
+      })
+      .then(function (text) {
+        if (text.trim() !== inlineFallback().trim()) {
+          console.warn(
+            "[paper-editor] " + SOURCE_FILE + " no longer matches the inline fallback " +
+            "copy in index.html. Update the #fallback-md block so opening the page " +
+            "over file:// still shows the current paper."
+          );
+        }
+        return text;
+      })
+      .catch(function () {
+        return inlineFallback();
+      });
+  }
+
+  /* ---------- rendering ---------- */
+
+  function titleFrom(root) {
+    var h1 = root.querySelector("h1");
+    return h1 ? h1.textContent.trim() : "";
+  }
+
+  function render() {
+    previewEl.innerHTML = marked.parse(sourceEl.value);
+    titleEl.textContent = titleFrom(previewEl) || SOURCE_FILE;
+  }
+
+  var renderTimer = null;
+  function scheduleRender() {
+    if (renderTimer) { clearTimeout(renderTimer); }
+    renderTimer = setTimeout(function () {
+      renderTimer = null;
+      render();
+      storageSet(sourceEl.value);
+    }, RENDER_DEBOUNCE_MS);
+  }
+
+  function setSource(text) {
+    sourceEl.value = text;
+    if (renderTimer) { clearTimeout(renderTimer); renderTimer = null; }
+    render();
+  }
+
+  /* ---------- export ---------- */
+
+  function escapeHtml(text) {
+    return text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function buildStandaloneHtml() {
+    var html = marked.parse(sourceEl.value);
+    /* Parse into a detached, inert document so nothing is fetched. */
+    var inert = new DOMParser().parseFromString(html, "text/html");
+    var title = titleFrom(inert.body) || "Document";
+
+    return [
+      "<!DOCTYPE html>",
+      '<html lang="en">',
+      "<head>",
+      '<meta charset="utf-8">',
+      '<meta name="viewport" content="width=device-width, initial-scale=1">',
+      "<title>" + escapeHtml(title) + "</title>",
+      "<style>",
+      EXPORT_BASE_CSS + docStyleEl.textContent.trim(),
+      "</style>",
+      "</head>",
+      "<body>",
+      '<div class="paper">',
+      html.trim(),
+      "</div>",
+      "</body>",
+      "</html>",
+      ""
+    ].join("\n");
+  }
+
+  function download(filename, text, mime) {
+    var blob = new Blob([text], { type: mime + ";charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+
+  function htmlFilename() {
+    return SOURCE_FILE.replace(/\.md$/i, "") + ".html";
+  }
+
+  /* ---------- view mode ---------- */
+
+  function setView(view) {
+    panesEl.className = "view-" + view;
+    var buttons = document.querySelectorAll("#viewtoggle button");
+    for (var i = 0; i < buttons.length; i++) {
+      buttons[i].setAttribute(
+        "aria-pressed",
+        buttons[i].getAttribute("data-view") === view ? "true" : "false"
+      );
+    }
+  }
+
+  /* ---------- wiring ---------- */
+
+  sourceEl.addEventListener("input", scheduleRender);
+
+  document.getElementById("viewtoggle").addEventListener("click", function (event) {
+    var view = event.target.getAttribute && event.target.getAttribute("data-view");
+    if (view) { setView(view); }
+  });
+
+  document.getElementById("btn-html").addEventListener("click", function () {
+    download(htmlFilename(), buildStandaloneHtml(), "text/html");
+  });
+
+  document.getElementById("btn-md").addEventListener("click", function () {
+    download(SOURCE_FILE, sourceEl.value, "text/markdown");
+  });
+
+  /* Two-click confirm. A native confirm() dialog would block the page. */
+  var resetArmed = false;
+  var resetTimer = null;
+  function disarmReset() {
+    resetArmed = false;
+    if (resetTimer) { clearTimeout(resetTimer); resetTimer = null; }
+    resetBtn.textContent = "Reset to original";
+  }
+  resetBtn.addEventListener("click", function () {
+    if (!resetArmed) {
+      resetArmed = true;
+      resetBtn.textContent = "Click again to discard edits";
+      resetTimer = setTimeout(disarmReset, 8000);
+      return;
+    }
+    disarmReset();
+    storageClear();
+    loadOriginal().then(setSource);
+  });
+
+  /* ---------- start ---------- */
+
+  loadOriginal().then(function (original) {
+    var saved = storageGet();
+    setSource(saved !== null ? saved : original);
+  });
+})();
+</script>
+</body>
+</html>
